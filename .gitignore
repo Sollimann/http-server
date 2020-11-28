@@ -1,4 +1,5 @@
 /debug
 /target
+*.iml
 .idea
 **/*.rs.bk
