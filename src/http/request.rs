@@ -1,4 +1,5 @@
 use super::method::{MethodError, Method};
+use super::QueryString;
 use std::str;
 use std::str::Utf8Error;
 use std::convert::TryFrom;
@@ -12,7 +13,7 @@ use std::fmt::Result as FmtResult;
 // this is to avoid 'dangling pointers' that are pointers pointing to dead / deallocated memory
 pub struct Request<'buf> {
     path: &'buf str,
-    query_string: Option<&'buf str>,
+    query_string: Option<QueryString<'buf>>,
     method: Method
 }
 
@@ -38,7 +39,7 @@ impl<'buf> TryFrom<&'buf [u8]> for Request<'buf> {
 
         let mut query_string = None;
         if let Some(i) = path.find('?') {
-            query_string = Some(&path[i+1..]);
+            query_string = Some(QueryString::from(&path[i+1..]));
             path = &path[..i];
         }
 

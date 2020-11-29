@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 // import files
 mod server;
 mod http;
