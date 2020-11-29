@@ -6,17 +6,23 @@ use std::error::Error;
 use std::fmt::{Display, Formatter, Debug};
 use std::fmt::Result as FmtResult;
 
-pub struct Request {
-    path: String,
-    query_string: Option<String>,
+// We have to specify the lifetime of the Request struct:
+// The lifetime of the request has to be less than or equal to the lifetime of
+// the buffer that the string view and query_string pointers are pointing to,
+// this is to avoid 'dangling pointers' that are pointers pointing to dead / deallocated memory
+pub struct Request<'buf> {
+    path: &'buf str,
+    query_string: Option<&'buf str>,
     method: Method
 }
 
-impl TryFrom<&[u8]> for Request {
+// implement the 'TryFrom' trait on the Request struct with lifetime equal to 'buf
+impl<'buf> TryFrom<&'buf [u8]> for Request<'buf> {
     type Error = ParseError;
 
     // GET /search?name=abc&sort=1 HTTP/1.1 (METHOD /Path Protocol)
-    fn try_from(buf: &[u8]) -> Result<Self, Self::Error> {
+    // buf variable is a pointer to the 'let mut buffer' in Server::run() method
+    fn try_from(buf: &'buf [u8]) -> Result<Self, Self::Error> {
         let request = str::from_utf8(buf)?;
 
 
@@ -36,7 +42,11 @@ impl TryFrom<&[u8]> for Request {
             path = &path[..i];
         }
 
-        unimplemented!();
+        Ok(Self {
+            path: path,
+            query_string,
+            method
+        })
     }
 }
 
