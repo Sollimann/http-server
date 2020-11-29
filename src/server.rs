@@ -1,5 +1,8 @@
 use std::net::TcpListener;
 use std::io::Read;
+use crate::http::Request; // using 'crate' keyword means the root of your project
+use std::convert::TryFrom;
+use std::convert::TryInto;
 
 // Struct definition
 pub struct Server {
@@ -26,6 +29,8 @@ impl Server {
                     match stream.read(&mut buffer) {
                         Ok(_) => {
                         println!("Received a request: {}", String::from_utf8_lossy(&buffer));
+                            Request::try_from(&buffer as &[u8]);
+                            let res: &Result<Request, _> = &buffer[..].try_into();
                         }
                         Err(e) => println!("Failed to read from connection: {}", e)
                     }
